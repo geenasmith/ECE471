@@ -5,18 +5,12 @@
 import sys, os, cv2, numpy
 
 def print_usage():
-    print("Usage: \n\tpython3 histmatch.py <input_dir> <output_dir>\n")
+    print("Usage: \n\tpython3 tograyscale.py <input_dir> <output_dir>\n")
     exit()
 
 def color2gray(input_dir,output_dir):
-    # check if directory exists -- done
-    # open input directory and get the list of images -- done
-    # see if output directory exists, if not create it -- done
-    # for each image:
-    # open image, convert to grayscale
-    # save image to the output directory
 
-    # add '/' to end of directory if it is not included
+    # add '/' to end of input directory if it is not included
     if not(input_dir[-1] == '/'):
         input_dir = input_dir + '/'
 
@@ -25,10 +19,12 @@ def color2gray(input_dir,output_dir):
         print("Input directory \"%s\" does not exist." %input_dir)
         print_usage()
 
+    # add '/' to end of output directory if it is not included
     if not(output_dir[-1] == '/'):
         output_dir = output_dir + '/'
 
     # if output directory does not exist, create it
+    # *** need to check for valid directory?
     if not(os.path.exists(output_dir)):
         os.makedirs(output_dir)
 
@@ -39,10 +35,11 @@ def color2gray(input_dir,output_dir):
     if len(inputFiles) == 0:
         print("No input images to convert.")
         exit()
+
+    convertedCount = 0  # number of images converted from RGB to grayscale
     
     # loop through files in the directory
     for fileName in inputFiles:
-        print("Image: " + input_dir + fileName)
         # check if the file is an image by trying to read it
         try:
             # docs: https://docs.opencv.org/4.2.0/d4/da8/group__imgcodecs.html
@@ -51,7 +48,6 @@ def color2gray(input_dir,output_dir):
 
             # check if image is rgb
             h,w,c = img.shape
-            print("Image dimensions: %d,%d,%d" % (h,w,c)) #DELETE ME
             
             if not(c == 3):
                 # could not read image or image is not RGB
@@ -60,20 +56,22 @@ def color2gray(input_dir,output_dir):
             # normalize RGB range to [0,255]
             cv2.normalize(img, img, 0, 255, cv2.NORM_MINMAX)
 
-            # DELETE ME
-            ctrimg = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
-            cv2.imwrite(output_dir+"ctrl"+fileName,ctrimg)
-
             # convert to gray
-            # use RGB weights of [0.07,0.72,0.21]
-            grayimg = 0.21*img[:,:,0]+0.72*img[:,:,1]+0.07*img[:,:,2]
+            # use RGB weights of [0.3,0.59,0.11]
+            # https://www.tutorialspoint.com/dip/grayscale_to_rgb_conversion.html
+            # https://docs.opencv.org/2.4/modules/imgproc/doc/miscellaneous_transformations.html?highlight=cvtcolor
+            grayimg = 0.114*img[:,:,0]+0.587*img[:,:,1]+0.299*img[:,:,2]
 
             cv2.imwrite(output_dir+fileName,grayimg)
+            print("Converted: " + input_dir + fileName)
 
+            convertedCount = convertedCount + 1
 
         except IOError:
             # do nothing, file is not a valid image
             continue
+
+    print("Done. Converted %d images to grayscale." % convertedCount)
 
 
 def main(argv):
