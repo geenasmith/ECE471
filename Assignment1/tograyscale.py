@@ -24,7 +24,6 @@ def color2gray(input_dir,output_dir):
         output_dir = output_dir + '/'
 
     # if output directory does not exist, create it
-    # *** need to check for valid directory?
     if not(os.path.exists(output_dir)):
         os.makedirs(output_dir)
 
@@ -48,7 +47,7 @@ def color2gray(input_dir,output_dir):
 
             # check if image is rgb
             h,w,c = img.shape
-            
+
             if not(c == 3):
                 # could not read image or image is not RGB
                 continue
@@ -57,8 +56,7 @@ def color2gray(input_dir,output_dir):
             cv2.normalize(img, img, 0, 255, cv2.NORM_MINMAX)
 
             # convert to gray
-            # use RGB weights of [0.3,0.59,0.11]
-            # https://www.tutorialspoint.com/dip/grayscale_to_rgb_conversion.html
+            # use RGB weights of [0.114,0.587,0.299] taken from OpenCV documentation:
             # https://docs.opencv.org/2.4/modules/imgproc/doc/miscellaneous_transformations.html?highlight=cvtcolor
             grayimg = 0.114*img[:,:,0]+0.587*img[:,:,1]+0.299*img[:,:,2]
 
@@ -67,7 +65,7 @@ def color2gray(input_dir,output_dir):
 
             convertedCount = convertedCount + 1
 
-        except IOError:
+        except:
             # do nothing, file is not a valid image
             continue
 
@@ -75,8 +73,6 @@ def color2gray(input_dir,output_dir):
 
 
 def main(argv):
-    # need to check input arguments and print usage
-    # need to check the format of the input and make sure the directory exists
     if not(len(argv) == 2):
         print("Incorrect number of input arguments.")
         print_usage()
