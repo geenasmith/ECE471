@@ -15,21 +15,42 @@ img2 = cv2.imread('../images/apple.jpg').astype(np.float32)
 # 1. Create the mask to blend the two images
 region = np.zeros(img1.shape, dtype='float32')
 region[:,:img1.shape[1]//2,:] = (1,1,1)
+# print(region.shape)
+
+# cv2.imshow('image',region)
+# cv2.waitKey(0)
 
 # 2. Create the Gaussian pyramids 
 gaussian_pyr_1 = gaussian_pyramid(img1, num_levels, alpha)
 gaussian_pyr_2 = gaussian_pyramid(img2, num_levels, alpha)
 region_pyr       = gaussian_pyramid(region, num_levels, 0.4)
 region_pyr.reverse() 
+# print(len(region_pyr))
+
+# cv2.imshow('image',region_pyr[0])
+# cv2.waitKey(0)
+# cv2.imshow('image',region_pyr[1])
+# cv2.waitKey(0)
+# cv2.imshow('image',region_pyr[2])
+# cv2.waitKey(0)
+# cv2.imshow('image',region_pyr[3])
+# cv2.waitKey(0)
+# cv2.imshow('image',region_pyr[4])
+# cv2.waitKey(0)
 
 # 3. Create the Laplacian pyramids
 laplacian_pyr_1 = laplacian_pyramid(gaussian_pyr_1, alpha)
 laplacian_pyr_2 = laplacian_pyramid(gaussian_pyr_2, alpha)
 
+# cv2.imshow('image',laplacian_pyr_1[1])
+# cv2.waitKey(0)
+# cv2.imshow('image',laplacian_pyr_2[1])
+# cv2.waitKey(0)
+
 # 4. Blend the pyramids 
 blended_pyr = blend(laplacian_pyr_1,laplacian_pyr_2, region_pyr)
 
-# # 5. Reconstruct the images and return the final layer
+# 5. Reconstruct the images and return the final layer
 final  = reconstruct(blended_pyr, alpha)
 final  = np.uint8(np.clip(final, 0, 255)) #Force RGB range and datatype
 
