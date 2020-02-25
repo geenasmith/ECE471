@@ -61,9 +61,11 @@ def pyrDown(prev_pyr_level, kernel):
             B = 0
             for m in range(-2,3):
                 for n in range(-2,3):
+                    # calculate the value for each R,G,B pixel and add to the sum
                     R += kernel[m+2][n+2]*g_k_1[(2*i)+m+2][(2*j)+n+2][0]
                     G += kernel[m+2][n+2]*g_k_1[(2*i)+m+2][(2*j)+n+2][1]
                     B += kernel[m+2][n+2]*g_k_1[(2*i)+m+2][(2*j)+n+2][2]
+            # assign R,G,B value to the new image
             g_k[i][j][0] = R
             g_k[i][j][1] = G
             g_k[i][j][2] = B
@@ -106,9 +108,11 @@ def pyrUp(prev_pyr_level, size, kernel):
                     ind1 = (i-m)/2
                     ind2 = (j-n)/2
                     if ind1%1==0 and ind2%1==0:
+                        # calculate the value for each R,G,B pixel and add to the sum
                         R += 4 * kernel[m+2][n+2] * g_k_1[int(ind1)+2][int(ind2)+2][0]
                         G += 4 * kernel[m+2][n+2] * g_k_1[int(ind1)+2][int(ind2)+2][1]
                         B += 4 * kernel[m+2][n+2] * g_k_1[int(ind1)+2][int(ind2)+2][2]
+            # assign R,G,B value to the new image
             g_k[i][j][0] = R
             g_k[i][j][1] = G
             g_k[i][j][2] = B
@@ -155,7 +159,7 @@ def laplacian_pyramid(gaussian_pyr, alpha):
 
     kernel = make_kernel(alpha)  # create the kernel using alpha
 
-    # create eachpyramid layer by expanding the next layer in the gaussian pyramid, and subtracting from the current gaussian layer
+    # create each pyramid layer by expanding the next layer in the gaussian pyramid, and subtracting from the current gaussian layer.
     # the final layer is identical to the final layer in the gaussian pyramid
     laplacian_pyr = []
     N = len(gaussian_pyr)
@@ -187,6 +191,7 @@ def blend(laplacianA,laplacianB,region_pyr):
     blended_pyr = []
     n = len(region_pyr)
     for l in range(0,len(region_pyr)):
+        # (region_pyr * laplacianB) + ((1-region_pyr)*laplacianA)
         blended_layer = np.multiply(region_pyr[n-l-1],laplacianB[l]) + np.multiply( np.subtract(1,region_pyr[n-l-1]) , laplacianA[l] )
         blended_pyr.append(blended_layer)
 
@@ -207,7 +212,7 @@ def reconstruct(blended_pyr, alpha):
 
     kernel = make_kernel(alpha)  # create kernel using alpha
 
-    # starting from the smallest layer, enlarge the image, add it to the next layer, and repeat moving down the pyramid
+    # starting from the smallest layer, expand the image, add it to the next layer, and repeat moving down the pyramid
     for l in range(len(blended_pyr)-1,0,-1):
         tmp = pyrUp(blended_pyr[l],blended_pyr[l-1].shape,kernel)
         blended_pyr[l-1] += tmp

@@ -6,7 +6,7 @@ from a2 import *
    
 #Constants
 num_levels = 5 #Number of pyramid levels
-alpha = 0.5#0.375  #Alpha value for w
+alpha = 0.375  #Alpha value for w
 
 # 1. Load the two images
 img1 = cv2.imread('../images/orange.jpg').astype(np.float32)
