@@ -43,20 +43,6 @@ def hog(X):
     for n in range(0,N):
         gx[n,:,:] = cv2.Sobel(X[n,:,:],cv2.CV_64F,1,0,ksize=1)
         gy[n,:,:] = cv2.Sobel(X[n,:,:],cv2.CV_64F,0,1,ksize=1)
-
-
-    # DELETE THIS SECTION
-    # sobelx = cv2.Sobel(X[0,:,:],cv2.CV_64F,1,0,ksize=1)
-    # sobely = cv2.Sobel(X[0,:,:],cv2.CV_64F,0,1,ksize=1)
-    # plt.subplot(2,2,1),plt.imshow(X[0,:,:],cmap = 'gray')
-    # plt.title('Original'), plt.xticks([]), plt.yticks([])
-    # plt.subplot(2,2,2),plt.imshow(sobelx,cmap = 'gray')
-    # plt.title('Sobel X'), plt.xticks([]), plt.yticks([])
-    # plt.subplot(2,2,3),plt.imshow(sobely,cmap = 'gray')
-    # plt.title('Sobel Y'), plt.xticks([]), plt.yticks([])
-    # plt.show()
-    # exit()
-
     
     #2 marks: Calculate the mag and unsigned angle in range ( [0-180) degrees) for each pixel
     #         mag, ang should have size NxHxW
@@ -69,41 +55,72 @@ def hog(X):
         ang[n,:,:] = np.rad2deg( np.arctan( gy[n,:,:]/(gx[n,:,:] + 0.000001)) ) % 180  # add small value as not to divide by 0
     
 
-
-    exit()
-
-
-    #1 mark: Split orientation matrix/tensor into 8x8 cells
-    #        HINT: matrix size should be Nx(number of cells)x8x8
+    #1 mark: Split orientation matrix/tensor into 8x8 cells, flattened to 64
+    #        HINT: matrix size should be Nx(number of cells)x(8x8)
     
-    
+    # note: assuming image dimensions are multiples of 8
+    nCols = int(W/8)
+    nRows = int(H/8)
 
+    splitAng = np.empty((N,nRows*nCols,64))
 
-
+    for n in range(0,N):
+        i = 0
+        for r in range(0,nRows):
+            for c in range(0,nCols):
+                splitAng[n,i,:] = ang[n,(r*8):(r*8)+8,(c*8):(c*8)+8].reshape((64))
+                i += 1
 
     #1 mark: Split magnitude matrix/tensor into 8x8 cells, flattened to 64
     #        HINT: matrix size should be Nx(number of cells)x(8*8)
-    
+    splitMag = np.empty((N,nRows*nCols,64))
+
+    for n in range(0,N):
+        i = 0
+        for r in range(0,nRows):
+            for c in range(0,nCols):
+                splitMag[n,i,:] = mag[n,(r*8):(r*8)+8,(c*8):(c*8)+8].reshape((64))
+                i += 1
+
+    # exit()
 
     #1 mark: create an array to hold the feature histogram for each 8x8 cell in a image
     #        HINT: the array should have 3 dimensions 
     
+    # will be Nx(num of cells)x9 for the 9 bins
+
+    featureHists = np.zeros((N,nRows*nCols,9))
 
     #Loop through and for each cell calculate the histogram of gradients
     #Don't worry if this is very slow 
-   
+
+    for n in range(0,N):
+        for i in range(0,nRows*nCols):
+            for j in range(0,64):
     #1 mark: Find the two closest bins based on orientation of the gradient for pixel j in cell i
+                magVal = splitMag[n,i,j]
+                angVal = splitAng[n,i,j]
+
+                bin1 = int(angVal / 20) % 9
+                bin2 = (bin1+1) % 9
+
 
     #1 mark: Calculate the bin ratio (how much of the magnitude is added to each bin)
-
+                ratio1 = 1-((angVal%20)/20)
+                ratio2 = 1-ratio1
        
     #5 marks: add the magnitude contribution to each bin, based on orientation overlap with the bin (bin ratio)
     #         HINT: consider the edge cases for the bins
-   
+                featureHists[n,i,bin1] += ratio1 * magVal
+                featureHists[n,i,bin2] += ratio2 * magVal
+    exit()
+
     #Normally, there is a window normalization step here, but we're going to ignore that.
 
     #1 mark: Reshape the histogram so that its NxD where N is the number of instances/images i
     #        and D is all the histograms per image concatenated into 1D vector
+
+
 
     #return the histogram as your feature vector
     pass
